@@ -1,0 +1,48 @@
+# goreleaser configuration for doh-mcp.
+#
+# Raw binaries, one per platform, so the npm wrapper can download a single file
+# with no archive step. The version is stamped through main.version.
+version: 2
+
+project_name: doh-mcp
+
+before:
+  hooks:
+    - go mod tidy
+    - go vet ./...
+
+builds:
+  - id: doh-mcp
+    main: .
+    binary: doh-mcp
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{ .Version }}
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: binaries
+    formats: [binary]
+    name_template: >-
+      doh-mcp_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if eq .Os "windows" }}.exe{{ end }}
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+changelog:
+  use: github-native
+
+release:
+  draft: false
+  prerelease: auto

@@ -1,0 +1,37 @@
+# Release pipeline. Triggered by a tag like v0.1.0. Produces one raw binary per
+# platform, which the npm wrapper downloads by name.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: gate
+        run: |
+          gofmt -s -l . | tee /tmp/fmt.txt
+          test ! -s /tmp/fmt.txt
+          go vet ./...
+          go test ./...
+
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

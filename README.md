@@ -27,24 +27,83 @@ go build -o doh-mcp .
 go install github.com/99apps-id/doh-mcp@latest
 ```
 
-## MCP client configuration
+## Use with any MCP client
 
-The server speaks MCP over stdio. A typical client entry:
+The server speaks MCP over stdio and needs no key, so any MCP client can run it.
+The easiest path is `npx`, which downloads the right binary on first use:
+
+```json
+{ "command": "npx", "args": ["-y", "doh-mcp"] }
+```
+
+Or install the binary directly:
+
+```sh
+go install github.com/99apps-id/doh-mcp@latest
+# or download doh-mcp_<version>_<os>_<arch> from Releases
+```
+
+Add `"-resolver", "cloudflare"` (or `google`, `quad9`, `adguard`) after the
+package name to pick a resolver.
+
+### Termixgo
+
+`mcpServers` in `~/.termixgo/config.json`:
+
+```json
+{ "name": "doh", "command": "npx", "args": ["-y", "doh-mcp"] }
+```
+
+Tools appear as `mcp_doh__doh_resolve`, `mcp_doh__doh_compare`, `mcp_doh__doh_fetch`.
+
+### Hermes
+
+`mcp_servers` in `~/.hermes/config.yaml`:
+
+```yaml
+mcp_servers:
+  doh:
+    command: npx
+    args: ["-y", "doh-mcp"]
+```
+
+### OpenClaw
+
+```sh
+openclaw mcp add doh --command npx --arg -y --arg doh-mcp
+openclaw mcp doctor doh --probe
+```
+
+### VS Code (GitHub Copilot, Cline, Continue)
+
+VS Code uses `servers` in `.vscode/mcp.json`:
 
 ```json
 {
-  "mcpServers": {
-    "doh": {
-      "command": "doh-mcp",
-      "args": ["-resolver", "cloudflare"]
-    }
+  "servers": {
+    "doh": { "type": "stdio", "command": "npx", "args": ["-y", "doh-mcp"] }
   }
 }
 ```
 
-For Termixgo, add the same entry to `mcpServers` in `~/.termixgo/config.json`;
-the tools then appear as `mcp_doh__doh_resolve`, `mcp_doh__doh_compare` and
-`mcp_doh__doh_fetch`.
+### Claude Desktop, Cursor, Windsurf, Cline, Zed
+
+These use `mcpServers`:
+
+```json
+{
+  "mcpServers": {
+    "doh": { "command": "npx", "args": ["-y", "doh-mcp"] }
+  }
+}
+```
+
+### Docker
+
+```sh
+docker build -t doh-mcp .
+# point the client at: docker run -i --rm doh-mcp
+```
 
 ## Example calls
 

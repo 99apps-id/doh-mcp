@@ -1,0 +1,13 @@
+{
+  "name": "doh-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for DNS-over-HTTPS: resolve names and fetch URLs through DoH, keyless.",
+  "keywords": ["mcp", "dns", "doh", "dns-over-https", "model-context-protocol"],
+  "homepage": "https://github.com/99apps-id/doh-mcp",
+  "bugs": { "url": "https://github.com/99apps-id/doh-mcp/issues" },
+  "repository": { "type": "git", "url": "git+https://github.com/99apps-id/doh-mcp.git" },
+  "license": "Apache-2.0",
+  "bin": { "doh-mcp": "cli.js" },
+  "files": ["cli.js", "README.md"],
+  "engines": { "node": ">=18" }
+}
