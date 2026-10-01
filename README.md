@@ -33,7 +33,7 @@ The server speaks MCP over stdio and needs no key, so any MCP client can run it.
 The easiest path is `npx`, which downloads the right binary on first use:
 
 ```json
-{ "command": "npx", "args": ["-y", "doh-mcp"] }
+{ "command": "npx", "args": ["-y", "@99apps-id/doh-mcp"] }
 ```
 
 Or install the binary directly:
@@ -51,7 +51,7 @@ package name to pick a resolver.
 `mcpServers` in `~/.termixgo/config.json`:
 
 ```json
-{ "name": "doh", "command": "npx", "args": ["-y", "doh-mcp"] }
+{ "name": "doh", "command": "npx", "args": ["-y", "@99apps-id/doh-mcp"] }
 ```
 
 Tools appear as `mcp_doh__doh_resolve`, `mcp_doh__doh_compare`, `mcp_doh__doh_fetch`.
@@ -64,13 +64,13 @@ Tools appear as `mcp_doh__doh_resolve`, `mcp_doh__doh_compare`, `mcp_doh__doh_fe
 mcp_servers:
   doh:
     command: npx
-    args: ["-y", "doh-mcp"]
+    args: ["-y", "@99apps-id/doh-mcp"]
 ```
 
 ### OpenClaw
 
 ```sh
-openclaw mcp add doh --command npx --arg -y --arg doh-mcp
+openclaw mcp add doh --command npx --arg -y --arg @99apps-id/doh-mcp
 openclaw mcp doctor doh --probe
 ```
 
@@ -81,7 +81,7 @@ VS Code uses `servers` in `.vscode/mcp.json`:
 ```json
 {
   "servers": {
-    "doh": { "type": "stdio", "command": "npx", "args": ["-y", "doh-mcp"] }
+    "doh": { "type": "stdio", "command": "npx", "args": ["-y", "@99apps-id/doh-mcp"] }
   }
 }
 ```
@@ -93,7 +93,7 @@ These use `mcpServers`:
 ```json
 {
   "mcpServers": {
-    "doh": { "command": "npx", "args": ["-y", "doh-mcp"] }
+    "doh": { "command": "npx", "args": ["-y", "@99apps-id/doh-mcp"] }
   }
 }
 ```

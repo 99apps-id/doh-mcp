@@ -6,7 +6,7 @@ Go binary for your platform on first run and launches it, so any MCP client can
 use it with `npx` and no manual install.
 
 ```json
-{ "command": "npx", "args": ["-y", "doh-mcp"] }
+{ "command": "npx", "args": ["-y", "@99apps-id/doh-mcp"] }
 ```
 
 See the main project for tools and configuration:

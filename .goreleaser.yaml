@@ -33,8 +33,9 @@ builds:
 archives:
   - id: binaries
     formats: [binary]
-    name_template: >-
-      doh-mcp_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if eq .Os "windows" }}.exe{{ end }}
+    # goreleaser appends .exe for a windows binary format build, so the
+    # template must not add its own or the asset ends up named .exe.exe.
+    name_template: "doh-mcp_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
 checksum:
   name_template: checksums.txt

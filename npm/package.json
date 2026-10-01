@@ -1,5 +1,5 @@
 {
-  "name": "doh-mcp",
+  "name": "@99apps-id/doh-mcp",
   "version": "0.1.0",
   "description": "MCP server for DNS-over-HTTPS: resolve names and fetch URLs through DoH, keyless.",
   "keywords": ["mcp", "dns", "doh", "dns-over-https", "model-context-protocol"],
@@ -9,5 +9,6 @@
   "license": "Apache-2.0",
   "bin": { "doh-mcp": "cli.js" },
   "files": ["cli.js", "README.md"],
-  "engines": { "node": ">=18" }
+  "engines": { "node": ">=18" },
+  "publishConfig": { "access": "public" }
 }
