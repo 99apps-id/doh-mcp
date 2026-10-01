@@ -1,0 +1,8 @@
+# Build output
+/doh-mcp
+/doh-mcp.exe
+/dist/
+
+# Test binaries
+*.test
+*.out

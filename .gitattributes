@@ -1,0 +1,17 @@
+# Line endings, pinned explicitly.
+#
+# core.autocrlf is a per-machine setting, so it is not a guarantee anyone else
+# can rely on. These rules are.
+
+* text=auto eol=lf
+
+*.go       text eol=lf
+*.mod      text eol=lf
+*.sum      text eol=lf
+Makefile   text eol=lf
+*.md       text eol=lf
+*.yml      text eol=lf
+*.yaml     text eol=lf
+*.json     text eol=lf
+.gitignore text eol=lf
+LICENSE    text eol=lf
