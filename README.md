@@ -9,6 +9,30 @@ some developer sites are blocked in some countries) while the site is fine
 everywhere else. A browser escapes that by resolving over HTTPS; this server
 gives an MCP client the same path.
 
+## What it is for
+
+DoH is more than a way around a block. Behind an agent, the same resolver is
+useful for:
+
+- **Privacy and integrity.** The query travels over HTTPS, so the local network
+  and the ISP cannot read which names are looked up, and an on-path attacker
+  cannot forge a reply.
+- **Diagnosis.** `doh_compare` separates "the service is down" from "your DNS is
+  broken": when the system resolver fails but DoH answers, the problem is DNS,
+  not the service. It also exposes a captive portal, or a split-horizon view
+  where an internal name resolves differently than it does in public.
+- **Debugging records that are not A/AAAA.** `doh_resolve` reads `MX`, `TXT`
+  (SPF, DKIM, DMARC), `CAA`, `NS`, `SOA`, `SRV` and `PTR`, for email
+  deliverability, domain ownership checks and reverse lookups from a log.
+- **Policy, chosen by resolver.** Cloudflare for privacy, Google for the public
+  record, Quad9 to block malware domains, AdGuard to block ads and trackers.
+  Picking the resolver is a policy decision made without changing the app.
+- **Reliability.** When the router resolver is slow or down, or a VPN breaks the
+  local lookup path, DoH over port 443 still resolves names, including on
+  networks that block port 53.
+- **A safe connection.** `doh_fetch` resolves a name once and pins the
+  connection to that address, which also defeats DNS rebinding.
+
 ## Tools
 
 | Tool | What it does |
