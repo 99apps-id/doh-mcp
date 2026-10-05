@@ -1,37 +1,50 @@
 # doh-mcp
 
-A small Model Context Protocol server for DNS-over-HTTPS. It resolves names and
-fetches URLs through a DoH resolver, so an agent keeps working behind an ISP DNS
-block or a poisoned resolver. No API key. A single Go binary, CGO-free.
+MCP server for DNS-over-HTTPS (DoH). Resolves names and fetches URLs through a
+DoH resolver so an agent keeps working behind an ISP DNS block or a poisoned
+resolver. No API key. A single Go binary, CGO-free.
 
-An ISP commonly returns NXDOMAIN for a whole domain (this is how DuckDuckGo and
-some developer sites are blocked in some countries) while the site is fine
-everywhere else. A browser escapes that by resolving over HTTPS; this server
-gives an MCP client the same path.
+**License:** Apache-2.0
 
-## What it is for
+## Install
 
-DoH is more than a way around a block. Behind an agent, the same resolver is
-useful for:
+### Build from source
 
-- **Privacy and integrity.** The query travels over HTTPS, so the local network
-  and the ISP cannot read which names are looked up, and an on-path attacker
-  cannot forge a reply.
-- **Diagnosis.** `doh_compare` separates "the service is down" from "your DNS is
-  broken": when the system resolver fails but DoH answers, the problem is DNS,
-  not the service. It also exposes a captive portal, or a split-horizon view
-  where an internal name resolves differently than it does in public.
-- **Debugging records that are not A/AAAA.** `doh_resolve` reads `MX`, `TXT`
-  (SPF, DKIM, DMARC), `CAA`, `NS`, `SOA`, `SRV` and `PTR`, for email
-  deliverability, domain ownership checks and reverse lookups from a log.
-- **Policy, chosen by resolver.** Cloudflare for privacy, Google for the public
-  record, Quad9 to block malware domains, AdGuard to block ads and trackers.
-  Picking the resolver is a policy decision made without changing the app.
-- **Reliability.** When the router resolver is slow or down, or a VPN breaks the
-  local lookup path, DoH over port 443 still resolves names, including on
-  networks that block port 53.
-- **A safe connection.** `doh_fetch` resolves a name once and pins the
-  connection to that address, which also defeats DNS rebinding.
+```bash
+git clone https://github.com/99apps-id/doh-mcp.git
+cd doh-mcp
+go build -o doh-mcp .
+```
+
+### Download binary
+
+Pre-built binaries are available for Linux, macOS, and Windows on the GitHub
+Releases page.
+
+## Configure
+
+The server accepts a `-resolver` flag:
+
+```sh
+doh-mcp -resolver cloudflare
+# or
+doh-mcp -resolver google
+# or
+doh-mcp -resolver quad9
+# or
+doh-mcp -resolver adguard
+# or
+doh-mcp -resolver https://your-doh-server/dns-query
+```
+
+Available built-in resolver aliases:
+- `cloudflare` (default)
+- `google`
+- `quad9`
+- `adguard`
+
+Or pass any DoH endpoint URL that answers the JSON API
+(`Accept: application/dns-json`).
 
 ## Tools
 
@@ -41,83 +54,212 @@ useful for:
 | `doh_compare` | Resolve a name with the system resolver and through DoH and report whether they agree, which detects a block, a hijack or a local override. |
 | `doh_fetch` | Fetch an http(s) URL, resolving its host through DoH and dialing the resolved address, so a DNS block does not stop the read. HTML is reduced to text. |
 
-Resolvers: `cloudflare` (default), `google`, `quad9`, `adguard`, or any DoH
-endpoint URL that answers the JSON API (`Accept: application/dns-json`).
+## Editor and Agent Compatibility
 
-## Build
+This MCP server is designed to work with any MCP client, including:
 
-```sh
-go build -o doh-mcp .
-go install github.com/99apps-id/doh-mcp@latest
-```
+- **Termigo** - native integration via `~/.termigo/mcp.json`
+- **Termixgo** - `~/.termixgo/config.json` or `mcpServers` section
+- **VS Code** (with MCP extension)
+- **Claude Code** (Anthropic's CLI)
+- **Codex** (OpenAI's coding agent)
+- **Cursor**
+- **OpenCode**
+- **OpenClaw**
+- **Hermes**
+- **9router**
+- **Windsurf**
+- **Zed**
+- **Cline**
+- Any other editor or agent that supports the Model Context Protocol (MCP) over stdio
 
-## Use with any MCP client
+### Generic MCP Configuration
 
-The server speaks MCP over stdio and needs no key, so any MCP client can run it.
-The easiest path is `npx`, which downloads the right binary on first use:
+All MCP clients that support stdio servers can use this format:
 
 ```json
-{ "command": "npx", "args": ["-y", "@99apps-id/doh-mcp"] }
+{
+  "mcpServers": {
+    "doh": {
+      "command": "doh-mcp",
+      "args": ["-resolver", "cloudflare"]
+    }
+  }
+}
 ```
 
-Or install the binary directly:
+Replace `doh-mcp` with the full path to the binary on your system:
 
-```sh
-go install github.com/99apps-id/doh-mcp@latest
-# or download doh-mcp_<version>_<os>_<arch> from Releases
+- **Linux:** `/usr/local/bin/doh-mcp` or `$HOME/.local/bin/doh-mcp`
+- **macOS:** `/usr/local/bin/doh-mcp` or `$HOME/.local/bin/doh-mcp`
+- **Windows:** `C:\\Users\\<USER>\\bin\\doh-mcp.exe` or `C:\\Program Files\\doh-mcp\\doh-mcp.exe`
+
+### Termigo
+
+`mcpServers` in `~/.termigo/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "doh": {
+      "command": "doh-mcp",
+      "args": ["-resolver", "cloudflare"]
+    }
+  }
+}
 ```
 
-Add `"-resolver", "cloudflare"` (or `google`, `quad9`, `adguard`) after the
-package name to pick a resolver.
+Tools appear as `mcp_doh__doh_resolve`, `mcp_doh__doh_compare`, `mcp_doh__doh_fetch`.
 
 ### Termixgo
 
 `mcpServers` in `~/.termixgo/config.json`:
 
 ```json
-{ "name": "doh", "command": "npx", "args": ["-y", "@99apps-id/doh-mcp"] }
+{
+  "mcpServers": {
+    "doh": {
+      "command": "doh-mcp",
+      "args": ["-resolver", "cloudflare"]
+    }
+  }
+}
 ```
 
-Tools appear as `mcp_doh__doh_resolve`, `mcp_doh__doh_compare`, `mcp_doh__doh_fetch`.
+Or use the built-in MCP commands:
 
-### Hermes
+```sh
+termixgo mcp add doh --command doh-mcp --arg -resolver --arg cloudflare
+termixgo mcp list
+```
 
-`mcp_servers` in `~/.hermes/config.yaml`:
+### VS Code (GitHub Copilot, Cline, Continue)
 
-```yaml
-mcp_servers:
-  doh:
-    command: npx
-    args: ["-y", "@99apps-id/doh-mcp"]
+VS Code uses `mcpServers` in `.vscode/mcp.json` (workspace) or user settings:
+
+```json
+{
+  "mcpServers": {
+    "doh": {
+      "command": "doh-mcp",
+      "args": ["-resolver", "cloudflare"]
+    }
+  }
+}
+```
+
+### Claude Desktop / Claude Code
+
+Claude Desktop uses `mcpServers` in `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "doh": {
+      "command": "doh-mcp",
+      "args": ["-resolver", "cloudflare"]
+    }
+  }
+}
+```
+
+Claude Code reads from `~/.claude.json`:
+
+```json
+{
+  "mcpServers": {
+    "doh": {
+      "command": "doh-mcp",
+      "args": ["-resolver", "cloudflare"]
+    }
+  }
+}
+```
+
+### Cursor
+
+Cursor uses `mcpServers` in `~/.cursor/settings.json` or workspace `.cursor/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "doh": {
+      "command": "doh-mcp",
+      "args": ["-resolver", "cloudflare"]
+    }
+  }
+}
+```
+
+### OpenCode
+
+OpenCode uses `.opencode/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "doh": {
+      "command": "doh-mcp",
+      "args": ["-resolver", "cloudflare"]
+    }
+  }
+}
 ```
 
 ### OpenClaw
 
 ```sh
-openclaw mcp add doh --command npx --arg -y --arg @99apps-id/doh-mcp
+openclaw mcp add doh --command doh-mcp --arg -resolver --arg cloudflare
 openclaw mcp doctor doh --probe
 ```
 
-### VS Code (GitHub Copilot, Cline, Continue)
+### Hermes
 
-VS Code uses `servers` in `.vscode/mcp.json`:
+Hermes uses `mcp_servers` in `~/.hermes/config.yaml`:
+
+```yaml
+mcp_servers:
+  doh:
+    command: doh-mcp
+    args:
+      - "-resolver"
+      - "cloudflare"
+```
+
+### 9router
+
+9router uses the MCP Marketplace UI or `managedMcpServers` in the workspace config:
 
 ```json
 {
-  "servers": {
-    "doh": { "type": "stdio", "command": "npx", "args": ["-y", "@99apps-id/doh-mcp"] }
+  "managedMcpServers": {
+    "doh": {
+      "command": "doh-mcp",
+      "args": ["-resolver", "cloudflare"]
+    }
   }
 }
 ```
 
-### Claude Desktop, Cursor, Windsurf, Cline, Zed
+Or use the Dashboard UI: **Plugins** -> **Add Custom MCP** -> paste the command above.
 
-These use `mcpServers`:
+### Codex CLI
+
+Codex CLI reads from `OPENAI_MCP_SERVERS` environment variable:
+
+```sh
+export OPENAI_MCP_SERVERS='{"doh":{"command":"doh-mcp","args":["-resolver","cloudflare"]}}'
+```
+
+Or in `.codex/config.json`:
 
 ```json
 {
   "mcpServers": {
-    "doh": { "command": "npx", "args": ["-y", "@99apps-id/doh-mcp"] }
+    "doh": {
+      "command": "doh-mcp",
+      "args": ["-resolver", "cloudflare"]
+    }
   }
 }
 ```
@@ -127,6 +269,20 @@ These use `mcpServers`:
 ```sh
 docker build -t doh-mcp .
 # point the client at: docker run -i --rm doh-mcp
+```
+
+Dockerfile:
+
+```dockerfile
+FROM golang:1.26-alpine AS build
+WORKDIR /app
+COPY . .
+RUN go build -o doh-mcp .
+
+FROM alpine:latest
+RUN apk add --no-cache ca-certificates
+COPY --from=build /app/doh-mcp /usr/local/bin/doh-mcp
+ENTRYPOINT ["doh-mcp"]
 ```
 
 ## Example calls
